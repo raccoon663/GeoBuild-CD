@@ -1,9 +1,10 @@
-# WHU-CD fc_siam_diff Results
+# WHU-CD FC-Siam-diff Results
 
-- 数据：WHU-CD-256（train 4,059 / val 779 / test 2,596，spatial split 见 `reports/whu_spatial_split.md`）。
-- 日志：`work/opencd/fc_siam_diff_whucd_100e/20260818_152457/20260818_152457.log`
+- Data: WHU-CD-256 (train 4,059 / val 779 / test 2,596; spatial split in
+  [`reports/whu_spatial_split.md`](whu_spatial_split.md)).
+- Log: `work/opencd/fc_siam_diff_whucd_100e/20260818_152457/20260818_152457.log`
 
-## Validation 曲线（per epoch）
+## Validation curves (per epoch)
 
 | Epoch | mIoU | aAcc | mFscore | changed IoU | changed F1 | changed P | changed R |
 |---|---|---|---|---|---|---|---|
@@ -18,21 +19,23 @@
 | 90 | 67.83 | 94.25 | 77.87 | 41.66 | 58.82 | 48.11 | 75.66 |
 | 100 | 64.66 | 92.99 | 74.91 | 36.62 | 53.61 | 41.82 | 74.66 |
 
-**Best changed IoU**: epoch 80, changed IoU 46.88, F1 63.83, mIoU 71.07.
+**Best changed IoU:** epoch 80, changed IoU 46.88, F1 63.83, mIoU 71.07.
 
-## All-unchanged collapse 排查记录
+## All-unchanged collapse check
 
-- 早期（epoch 10）可能出现 changed recall=0（all-unchanged）；随后恢复正常（见上表与 [`docs/methodology.md`](../docs/methodology.md) §5）。
+- Early on (epoch 10) the changed class can show recall = 0 (all-unchanged);
+  training recovers afterwards (see table above and
+  [`docs/methodology.md`](../docs/methodology.md) §5).
 
 Val curves: `figures/fc_siam_diff_whu_val_curves.png`
 
-## Test metrics（官方 test split）
+## Test metrics (official test split)
 
 ```json
 {
   "model": "FC-Siam-diff (best epoch 80)",
   "dataset": "WHU-CD-256 (spatial split; test 2596 tiles)",
-  "checkpoint": "work/opencd/fc_siam_diff_whucd_100e\\best_mIoU_epoch_80.pth",
+  "checkpoint": "work/opencd/fc_siam_diff_whucd_100e/best_mIoU_epoch_80.pth",
   "test": {
     "changed": {
       "F1": 70.77,

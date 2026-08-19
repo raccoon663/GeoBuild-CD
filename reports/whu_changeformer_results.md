@@ -1,9 +1,10 @@
-# WHU-CD changeformer Results
+# WHU-CD ChangeFormer Results
 
-- 数据：WHU-CD-256（train 4,059 / val 779 / test 2,596，spatial split 见 `reports/whu_spatial_split.md`）。
-- 日志：`work/opencd/changeformer_mit-b0_whucd_100e/20260818_164749/20260818_164749.log`
+- Data: WHU-CD-256 (train 4,059 / val 779 / test 2,596; spatial split in
+  [`reports/whu_spatial_split.md`](whu_spatial_split.md)).
+- Log: `work/opencd/changeformer_mit-b0_whucd_100e/20260818_164749/20260818_164749.log`
 
-## Validation 曲线（per epoch）
+## Validation curves (per epoch)
 
 | Epoch | mIoU | aAcc | mFscore | changed IoU | changed F1 | changed P | changed R |
 |---|---|---|---|---|---|---|---|
@@ -18,21 +19,23 @@
 | 90 | 86.64 | 98.60 | 92.41 | 74.74 | 85.55 | 97.14 | 76.43 |
 | 100 | 86.52 | 98.58 | 92.33 | 74.52 | 85.40 | 97.03 | 76.25 |
 
-**Best changed IoU**: epoch 30, changed IoU 77.46, F1 87.30, mIoU 88.07.
+**Best changed IoU:** epoch 30, changed IoU 77.46, F1 87.30, mIoU 88.07.
 
-## All-unchanged collapse 排查记录
+## All-unchanged collapse check
 
-- **未观察到 all-unchanged collapse**：从首个验证点（epoch 10）起 changed IoU 即为正（>0），模型正常学到了 changed 类。
+- **No all-unchanged collapse observed:** from the first validation point
+  (epoch 10) the changed IoU is positive (> 0); the model learned the changed
+  class normally.
 
 Val curves: `figures/changeformer_whu_val_curves.png`
 
-## Test metrics（官方 test split）
+## Test metrics (official test split)
 
 ```json
 {
   "model": "ChangeFormer mit-b0 (best epoch 30)",
   "dataset": "WHU-CD-256 (spatial split; test 2596 tiles)",
-  "checkpoint": "work/opencd/changeformer_mit-b0_whucd_100e\\best_mIoU_epoch_30.pth",
+  "checkpoint": "work/opencd/changeformer_mit-b0_whucd_100e/best_mIoU_epoch_30.pth",
   "test": {
     "changed": {
       "F1": 91.64,

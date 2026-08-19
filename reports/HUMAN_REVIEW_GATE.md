@@ -1,7 +1,13 @@
-# HUMAN REVIEW GATE（Phase Y）
+# HUMAN REVIEW GATE (Phase Y)
 
-- 日期：2026-08-19。主模型：ChangeFormer（WHU-CD 训练，Shanghai Jan-Apr zero-shot，threshold 0.5）。
-- **Total ChangeFormer candidates: 5579**
+**Archived prototype status:** This gate records the implemented candidate-review
+workflow. The project was intentionally paused before systematic human
+validation; the 295-card pool is not used to claim Shanghai accuracy.
+
+- Date: 2026-08-19. Primary model: ChangeFormer (WHU-CD trained, Shanghai
+  Jan–Apr zero-shot, threshold 0.5).
+- **Total ChangeFormer candidates: 5,579** (candidate count does not imply
+  correctness).
 
 ## Candidate counts by size
 
@@ -31,39 +37,44 @@
 - ChangeFormer ∩ Original App (iter-14000): 15.2% of CF candidates
 - ChangeFormer ∩ Legacy local (iter-6000): 8.8%
 - ChangeFormer ∩ FC-Siam: 31.9%
-- Original App-only objects（CF 未覆盖）: 9373
-- FC-Siam-only objects（CF/iter-14000 未覆盖）: 29808
+- Original App-only objects (not covered by CF): 9,373
+- FC-Siam-only objects (not covered by CF / iter-14000): 29,808
 
 ## Risk / small-change
 
-- Boundary-risk candidates (boundary_distance<=16 px): 2750
-- Small-change candidates (10-100 m2): 1400（10-30 与 30-100 m² 为重点审核范围，未删除）
+- Boundary-risk candidates (boundary_distance <= 16 px): 2,750
+- Small-change candidates (10-100 m²): 1,400 (the 10-30 and 30-100 m² ranges
+  are the priority review range and are kept, not deleted)
 
-## Review-card QA（2026-08-19 修复后）
+## Review-card QA (after the 2026-08-19 fix)
 
-- 卡片按候选几何 bbox+150 m 缓冲裁剪，三面板叠加候选边界；QA 阈值见 [`configs/candidate_ranking.yaml`](../configs/candidate_ranking.yaml) 的 `card.qa` 与 [`docs/methodology.md`](../docs/methodology.md) §7。
-- 本次 295 张卡片 QA：invalid/flag 0 张（要求 0，已满足）。
+- Cards are cropped from the candidate geometry bbox + 150 m context buffer
+  with a three-panel layout and the candidate boundary overlaid; QA thresholds
+  are in [`configs/candidate_ranking.yaml`](../configs/candidate_ranking.yaml)
+  (`card.qa`) and [`docs/methodology.md`](../docs/methodology.md) §7.
+- 295-card QA: 0 invalid / flagged (requirement 0 — satisfied).
 
-## 建议人工审查规模
+## Review pool size
 
-- Review pool（Top200 ∪ stratified）: 295 个对象；分层审查集 166 个（含 15% 负控）。
-- 建议首轮人工审查 **Top 100**（约 1-2 小时）；完整 review pool 约 295 张卡片。
+- Review pool (Top-200 ∪ stratified): 295 objects; stratified review set 166
+  (incl. 15% negative controls).
+- Suggested first pass: **Top 100** (~1–2 hours); full pool ~295 cards.
 
-## 路径
+## Outputs
 
 - Review cards: `outputs/human_review/cards/`
 - review_manifest.csv: `outputs/human_review/review_manifest.csv`
 - stratified_review_set.csv: `outputs/human_review/stratified_review_set.csv`
-- 全部候选目录: `outputs/review_candidates/`（all_candidates / top50/100/200 / oa_only / fc_only / negative_controls，gpkg+csv）
+- Candidate catalogs: `outputs/review_candidates/` (all_candidates /
+  top50/100/200 / oa_only / fc_only / negative_controls; gpkg + csv)
 
-## 下一步（人工 review 完成后执行）
+## After human review (deferred)
 
-在 `outputs/human_review/review_manifest.csv` 中填写最后 5 列（review_status / true_change / change_type / confidence / notes）后，运行：
+A future evaluation script would compute Precision@K after verified
+annotations become available; this phase is not included in the current frozen
+prototype. Given sufficient reviewed GT coverage it would also compute
+Recall@K / F1 / IoU, a false-positive taxonomy, small-change recall, and model
+agreement utility, and would inform threshold calibration / fine-tuning.
 
-```
-python scripts/after_human_review.py
-```
-
-将计算 Precision@50/100/200；若人工 GT 覆盖充分再计算 Recall@K / F1 / IoU、false-positive taxonomy、small-change recall 与模型 agreement 效用，并决定阈值校准/微调策略。
-
-**当前 STOP：等待人工 review。不计算 Shanghai accuracy，不把 candidate 当作 confirmed change。**
+**STOP status:** systematic human review and Shanghai accuracy computation are
+intentionally deferred; candidates are not treated as confirmed change.
