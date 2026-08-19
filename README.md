@@ -51,9 +51,13 @@ flowchart TD
 - ChangeFormer clearly stronger than FC-Siam-diff on WHU-CD.
 - Registration sensitivity quantitatively explains why the legacy
   segmentation-differencing workflow produces unreliable change maps.
-- Direct CD reduces boundary-fragment style pseudo-change on Shanghai.
-- Candidate ranking + review-card workflow implemented and QA'd as a
-  prototype.
+- Direct CD produced substantially less boundary-concentrated and
+  fragmented change response than independent segmentation differencing on
+  Shanghai, consistent with lower sensitivity to registration-edge
+  artifacts.
+- Candidate ranking + review-card workflow implemented as a prototype;
+  the review-card rendering pipeline passed QA (crop/valid-content
+  checks), not the ranking quality itself.
 
 ## What Did Not Yet Work
 
