@@ -1,0 +1,65 @@
+# ---- Geospatial data (raw or derivable) ----
+*.tif
+*.tiff
+*.img
+*.hdr
+*.shp
+*.shx
+*.dbf
+*.prj
+*.qpj
+*.cpg
+*.sbn
+*.sbx
+*.gpkg
+*.gdb
+*.vrt
+
+# ---- Model artifacts / checkpoints ----
+*.pth
+*.pt
+*.onnx
+*.engine
+*.onnx.bak*
+
+# ---- Archives ----
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+
+# ---- Data / work directories ----
+data/
+datasets/
+work/
+work_dirs/
+checkpoints/
+outputs/raw/
+outputs/human_review/cards/
+outputs/human_review/archive/
+outputs/shanghai_zero_shot/
+outputs/failure_analysis/
+outputs/segmentation/
+outputs/review_candidates/
+outputs/hard_negative_gallery/
+third_party/
+.env
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+venv/
+.venv/
+
+# ---- Editors / OS ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- WorkBuddy project state (never publish) ----
+.workbuddy/

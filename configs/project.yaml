@@ -1,0 +1,64 @@
+# GeoBuild-CD project configuration
+# Central place for data paths, model paths, and experiment settings.
+# Local filesystem paths are replaced with placeholders; see
+# docs/data_and_splits.md for the placeholder legend.
+
+project_name: GeoBuild-CD
+# Training supervision month: 2026-04 (April building labels).
+# 2026-01 is independent temporal evaluation data (NOT a training reference month).
+reference_month: 2026-04
+random_seed: 42
+
+data:
+  raw_root: <LOCAL_SHANGHAI_DATA>
+  months:
+    2026-01:
+      label: "January"
+      image: "<LOCAL_SHANGHAI_DATA>/2026-01.tif"
+      # independent manual labels, temporal evaluation only (not training)
+      labels: "<LOCAL_SHANGHAI_DATA>/2026-01_labels.shp"
+    2026-02:
+      label: "February"
+      image: "<LOCAL_SHANGHAI_DATA>/2026-02.tif"
+    2026-03:
+      label: "March"
+      image: "<LOCAL_SHANGHAI_DATA>/2026-03.tif"
+    2026-04:
+      label: "April"
+      image: "<LOCAL_SHANGHAI_DATA>/2026-04.tif"
+      # main supervision: April building labels (Value=1), ENVI raster band5
+      labels: "<LOCAL_SHANGHAI_DATA>/2026-04_labels.shp"
+    "2026-05-31":
+      label: "May31"
+      image: "<LOCAL_SHANGHAI_DATA>/2026-05-31.tif"
+
+  labels_candidates:
+    - "<LOCAL_SHANGHAI_DATA>/2026-04_labels.shp"
+    - "<LOCAL_SHANGHAI_DATA>/2026-03_labels.shp"
+    - "<LOCAL_SHANGHAI_DATA>/2026-01_labels.shp"
+
+models:
+  segformer:
+    # checkpoints are NOT redistributed; configure your local <MODEL_ROOT>
+    onnx_whu: "<MODEL_ROOT>/segformer_b5_whu_generalized_best_mIoU_iter_14000.onnx"
+    pth: "<MODEL_ROOT>/segformer_b5_zhelin_local_best_20260624.pth"
+    input_size: 512
+    classes: ["background", "building"]
+  sam:
+    checkpoint: "<MODEL_ROOT>/sam_vit_l_0b3195.pth"
+    model_type: "vit_l"
+
+experiment:
+  patch_size: 512
+  stride: 512
+  building_threshold: 0.5
+  high_confidence: 0.7
+  uncertain_low: 0.3
+  min_building_area_m2: 30.0
+  stability_threshold: 0.8
+  device: "cuda"
+
+paths:
+  outputs: "outputs"
+  reports: "reports"
+  work: "work"

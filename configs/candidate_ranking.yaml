@@ -1,0 +1,98 @@
+# Candidate ranking configuration (Phase U)
+# Transparent weights; no hidden magic numbers.
+
+model:
+  primary: changeformer
+  change_threshold: 0.5
+  high_prob_threshold: 0.8
+
+size_groups_m2:
+  - [0, 10, "tiny_<10m2"]
+  - [10, 30, "10-30m2"]
+  - [30, 100, "30-100m2"]
+  - [100, 500, "100-500m2"]
+  - [500, null, ">500m2"]
+
+# Review priority: keep 10-30 and 30-100 m2 as key review range (Phase R).
+# <10 m2 candidates are down-weighted but NOT deleted.
+size_score:
+  "tiny_<10m2": 0.5
+  "10-30m2": 1.0
+  "30-100m2": 1.0
+  "100-500m2": 0.9
+  ">500m2": 0.8
+
+ranking:
+  weight_mean_prob: 0.30
+  weight_max_prob: 0.20
+  weight_building_context: 0.25
+  weight_agreement: 0.15
+  weight_size: 0.10
+  penalty_boundary_artifact: 0.35
+  penalty_registration_risk: 0.25
+  penalty_seasonal_landcover: 0.15
+  # agreement bonus counts how many other models (legacy6000, legacy14000,
+  # fc_siam) overlap the candidate; normalized by 3.
+  agreement_normalizer: 3.0
+
+building_context:
+  # score = w_jan*jan_overlap + w_apr*apr_overlap + w_adj*adjacent +
+  #         w_prob_delta*sigmoid(prob_delta_scale * apr_minus_jan) +
+  #         w_dist*exp(-min_dist_to_building_m / dist_scale_m)
+  weight_jan_overlap: 0.25
+  weight_apr_overlap: 0.35
+  weight_adjacent: 0.20
+  weight_prob_delta: 0.10
+  weight_distance: 0.10
+  prob_delta_scale: 8.0
+  dist_scale_m: 25.0
+
+risks:
+  boundary_artifact:
+    # min distance (px) from candidate to Jan∩Apr content boundary
+    risk_zero_beyond_px: 64
+    risk_full_below_px: 16
+  registration:
+    # fraction of candidate pixels within 4 px of the building-mask boundary
+    building_edge_px: 4
+  seasonal_landcover:
+    # no reliable land-cover classifier -> spectral proxy:
+    # mean |Apr-Jan| RGB normalized; combined with low building context &
+    # no model agreement (see score formula in rank_and_review.py)
+    spectral_scale: 0.02
+
+top_k:
+  - 50
+  - 100
+  - 200
+
+stratified_review:
+  seed: 2026
+  target_total: 200
+  negative_control_ratio: 0.15
+  per_category:
+    changeformer_only: 20
+    original_app_only: 20
+    both_agree: 25
+    fc_siam_only: 20
+    high_confidence_changeformer: 30
+    small_changeformer: 30
+    boundary_risk: 25
+
+# Review-card rendering (2026-08-19 fix): crop from candidate geometry.
+card:
+  # contextual buffer around the candidate polygon bbox (metres)
+  context_buffer_m: 150
+  # displayed window side clamped to [min_window_px, max_window_px]
+  min_window_px: 256
+  max_window_px: 1600
+  qa:
+    # min fraction of non-nodata pixels in the Jan and Apr displayed crops
+    jan_apr_min_valid_fraction: 0.30
+    # min fraction of candidate pixels inside Jan∩Apr common valid content
+    candidate_min_valid_fraction: 0.80
+    # allowed |manifest - recomputed-from-card| for mean/max probability
+    prob_tolerance: 0.05
+  qa_sample:
+    seed: 2026
+    n_random: 20

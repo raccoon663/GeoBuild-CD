@@ -1,0 +1,20 @@
+# GeoBuild-CD runtime dependencies (Windows, Python 3.10, CUDA 12.x)
+torch>=2.5
+torchvision>=0.20
+numpy>=1.26
+rasterio>=1.4
+geopandas>=1.1
+shapely>=2.0
+pyproj>=3.7
+fiona>=1.10
+pyyaml
+pandas
+scipy
+scikit-image
+matplotlib
+tqdm
+onnxruntime
+onnx
+torchgeo>=0.6
+segment-geospatial>=1.4
+openpyxl
