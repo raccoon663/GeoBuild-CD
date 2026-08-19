@@ -1,4 +1,8 @@
-# GeoBuild-CD runtime dependencies (Windows, Python 3.10, CUDA 12.x)
+# GeoBuild-CD — Environment A: base / geospatial / legacy inference
+# This is the base / geospatial / legacy pipeline runtime (pure-PyTorch
+# SegFormer inference, geospatial IO, candidate ranking, review cards).
+# It does NOT cover the OpenCD training runtime — see environment/README.md.
+# Versions below are the tested environment (Windows, Python 3.10, CUDA 12.x).
 torch>=2.5
 torchvision>=0.20
 numpy>=1.26

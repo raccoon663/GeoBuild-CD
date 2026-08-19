@@ -1,11 +1,20 @@
-"""Phase J - WHU-trained OpenCD model -> Shanghai Jan-Apr zero-shot inference.
+"""Generic bi-temporal change detection inference with a WHU-trained OpenCD model.
 
-Usage:
-  python scripts/opencd_zero_shot_shanghai.py --config <opencd_cfg> --checkpoint <pth>
-      [--tag fc_siam_diff] [--device cuda] [--stride 128]
+Resamples the second image (T2) onto the first image's (T1) grid (bilinear),
+then runs a tiled, overlap-accumulated inference. Writes change probability,
+change mask, and stats.json into the output directory.
 
-The April image is resampled onto the January grid (bilinear) before inference;
-no Shanghai GT is used. Outputs land in outputs/shanghai_zero_shot/<tag>/.
+Examples:
+  # Shanghai Jan-Apr zero-shot transfer (original behavior; uses local defaults)
+  python scripts/opencd_zero_shot_shanghai.py \
+      --config <opencd_cfg> --checkpoint <pth> [--tag changeformer]
+
+  # Any custom bi-temporal pair
+  python scripts/opencd_zero_shot_shanghai.py \
+      --t1 /path/to/t1.tif --t2 /path/to/t2.tif \
+      --config <opencd_cfg> --checkpoint <pth> --output <out_dir>
+
+No ground truth is used; outputs are change candidates only.
 """
 
 from __future__ import annotations
@@ -25,6 +34,8 @@ from rasterio.warp import reproject
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT / "third_party" / "open-cd"))
 
+# Backward-compatible defaults (Shanghai Jan-Apr local pair).
+# Configure these paths, or pass --t1/--t2 explicitly.
 JAN_IMG = r"<LOCAL_SHANGHAI_DATA>/2026-01.tif"
 APR_IMG = r"<LOCAL_SHANGHAI_DATA>/2026-04.tif"
 OUT_ROOT = PROJECT_ROOT / "outputs" / "shanghai_zero_shot"
@@ -53,6 +64,9 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", required=True)
     ap.add_argument("--checkpoint", required=True)
+    ap.add_argument("--t1", default=JAN_IMG, help="first image (reference grid)")
+    ap.add_argument("--t2", default=APR_IMG, help="second image (resampled onto the T1 grid)")
+    ap.add_argument("--output", default=None, help="output directory (default: outputs/shanghai_zero_shot/<tag>)")
     ap.add_argument("--tag", default="model")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--stride", type=int, default=128)
@@ -61,19 +75,23 @@ def main() -> None:
     ap.add_argument("--threshold", type=float, default=0.5)
     args = ap.parse_args()
 
-    out_dir = OUT_ROOT / args.tag
+    t1_img, t2_img = Path(args.t1), Path(args.t2)
+    if args.output:
+        out_dir = Path(args.output)
+    else:
+        out_dir = OUT_ROOT / args.tag
     out_dir.mkdir(parents=True, exist_ok=True)
     model = load_model(args.config, args.checkpoint, args.device)
     model.eval()
 
-    # January grid = reference grid
-    with rasterio.open(JAN_IMG) as jan_src:
+    # T1 grid = reference grid
+    with rasterio.open(t1_img) as jan_src:
         jan_h, jan_w = jan_src.height, jan_src.width
         jan_tr, jan_crs = jan_src.transform, jan_src.crs
 
-    # April -> January grid (bilinear), probability-free RGB
-    apr_aligned_path = out_dir / "april_aligned_jan_grid.tif"
-    with rasterio.open(JAN_IMG) as jan_src, rasterio.open(APR_IMG) as apr_src:
+    # T2 -> T1 grid (bilinear), probability-free RGB
+    apr_aligned_path = out_dir / "t2_aligned_t1_grid.tif"
+    with rasterio.open(t1_img) as jan_src, rasterio.open(t2_img) as apr_src:
         prof = jan_src.profile.copy()
         prof.update(count=3, dtype="uint8", compress="deflate")
         with rasterio.open(apr_aligned_path, "w", **prof) as dst:
@@ -118,7 +136,7 @@ def main() -> None:
     weight_acc = np.zeros((jan_h, jan_w), dtype=np.float32)
     weights = hann2d(tile)
 
-    with rasterio.open(JAN_IMG) as jan_src, rasterio.open(apr_aligned_path) as apr_src:
+    with rasterio.open(t1_img) as jan_src, rasterio.open(apr_aligned_path) as apr_src:
         done = 0
         batch_a, batch_b, batch_wins = [], [], []
 
@@ -178,7 +196,7 @@ def main() -> None:
 
     prob_path = out_dir / "change_probability.tif"
     mask_path = out_dir / "change_mask.tif"
-    with rasterio.open(JAN_IMG) as src:
+    with rasterio.open(t1_img) as src:
         prof = src.profile.copy()
     prof.update(dtype="float32", count=1, compress="deflate", nodata=0.0, tiled=True, blockxsize=256, blockysize=256)
     with rasterio.open(prob_path, "w", **prof) as dst:
