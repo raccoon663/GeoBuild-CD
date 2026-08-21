@@ -61,5 +61,5 @@ venv/
 .DS_Store
 Thumbs.db
 
-# ---- WorkBuddy project state (never publish) ----
+# Local project state
 .workbuddy/
